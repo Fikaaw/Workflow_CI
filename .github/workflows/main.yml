@@ -1,0 +1,193 @@
+name: MLFlow CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  CSV_URL: "MLproject/pulmonarycancerclean.csv"
+  TARGET_VAR: "pulmonary_cancer"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Run actions/checkout@v3 
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.12.7
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12.7
+
+    - name: Check Env
+      run: |
+        echo $CSV_URL
+        python --version
+        pip --version
+
+    - name: Install dependencies
+      run: |
+        pip install -r ./MLProject/requirements.txt
+
+    - name: Test local model loading
+      run: |
+        python load_local_model.py
+
+    - name: Run mlflow project (alternative approach)
+      run: |
+        cd MLProject
+        python modelling_with_local_model.py
+
+    - name: Get latest MLflow run_id
+      run: |
+        # Get the latest run ID from the default experiment (ID: 0)
+        RUN_ID=$(python -c "import mlflow; client = mlflow.tracking.MlflowClient(); runs = client.search_runs(experiment_ids=['0'], order_by=['start_time DESC'], max_results=1); print(runs[0].info.run_id if runs else 'NO_RUN_FOUND')")
+        echo "Found RUN_ID: $RUN_ID"
+        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+        
+        # Verify run exists
+        if [ "$RUN_ID" = "NO_RUN_FOUND" ]; then
+          echo "Error: No MLflow run found"
+          exit 1
+        fi
+        
+        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+    - name: Install Python dependencies
+      run: |
+        echo "Install dependencies dari model jika perlu"
+        # Contoh jika model tersimpan di model_dir/model
+        pip install -r model_dir/model/requirements.txt || echo "Tidak ada file requirements"
+
+    - name: Package MLflow artifacts
+      run: |
+        # Create artifacts directory
+        mkdir -p artifacts
+        
+        # Copy MLflow run artifacts
+        if [ -d "MLProject/mlruns" ]; then
+          cp -r MLProject/mlruns artifacts/
+          echo "MLflow runs copied to artifacts"
+        fi
+        
+        # Copy model directory
+        if [ -d "model_dir" ]; then
+          cp -r model_dir artifacts/
+          echo "Model directory copied to artifacts"
+        fi
+        
+        # Create artifact summary
+        echo "Artifact Summary:" > artifacts/artifact_summary.txt
+        echo "Generated on: $(date)" >> artifacts/artifact_summary.txt
+        echo "Run ID: $RUN_ID" >> artifacts/artifact_summary.txt
+        echo "Repository: ${{ github.repository }}" >> artifacts/artifact_summary.txt
+        echo "Commit: ${{ github.sha }}" >> artifacts/artifact_summary.txt
+        
+        # List artifacts
+        echo "\nArtifact Contents:" >> artifacts/artifact_summary.txt
+        find artifacts -type f >> artifacts/artifact_summary.txt
+
+    - name: Upload MLflow artifacts to GitHub Actions
+      uses: actions/upload-artifact@v4
+      with:
+        name: mlflow-artifacts-${{ github.run_number }}
+        path: artifacts/
+        retention-days: 30
+        compression-level: 6
+
+    - name: Upload to Google Drive
+      run: |
+        # Install Google Drive dependencies
+        pip install pydrive2 google-auth google-auth-oauthlib google-auth-httplib2
+        
+        # Create Google Drive upload script
+        cat > upload_to_gdrive.py << 'EOF'
+        import os
+        import zipfile
+        from pydrive2.auth import GoogleAuth
+        from pydrive2.drive import GoogleDrive
+        
+        def upload_to_gdrive():
+            try:
+                # Create zip file of artifacts
+                zip_filename = f"mlflow-artifacts-{os.environ.get('GITHUB_RUN_NUMBER', 'unknown')}.zip"
+                
+                with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for root, dirs, files in os.walk('artifacts'):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.relpath(file_path, 'artifacts')
+                            zipf.write(file_path, arcname)
+                
+                print(f"Created zip file: {zip_filename}")
+                print(f"Zip file size: {os.path.getsize(zip_filename)} bytes")
+                
+                # Note: In production, you would configure Google Drive authentication
+                # using service account credentials stored in GitHub secrets
+                print("Google Drive upload configured but skipped in demo mode")
+                print("To enable: Add GOOGLE_DRIVE_CREDENTIALS secret and uncomment upload code")
+                
+                # Uncomment below for actual Google Drive upload:
+                # gauth = GoogleAuth()
+                # gauth.ServiceAuth()  # Use service account
+                # drive = GoogleDrive(gauth)
+                # 
+                # file_drive = drive.CreateFile({'title': zip_filename})
+                # file_drive.SetContentFile(zip_filename)
+                # file_drive.Upload()
+                # print(f"Uploaded {zip_filename} to Google Drive")
+                
+            except Exception as e:
+                print(f"Google Drive upload error: {str(e)}")
+                print("Continuing with GitHub Actions artifacts only")
+        
+        if __name__ == "__main__":
+            upload_to_gdrive()
+        EOF
+        
+        # Run the upload script
+        python upload_to_gdrive.py
+        
+        echo "ID Run: ${{ env.RUN_ID }}"
+        echo "CSV URL: ${{ env.CSV_URL }}"
+        echo "Target Variable: ${{ env.TARGET_VAR }}"
+
+    - name: Build Docker Model
+      run: |
+        # Use MLflow to build Docker image from the model
+        cd MLProject
+        
+        # Build Docker image using MLflow
+        mlflow models build-docker \
+          --model-uri "file:../model_dir/model" \
+          --name "${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:latest" \
+          --enable-mlserver
+        
+        echo "MLflow Docker image built successfully"
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: Tag Docker Image
+      run: |
+        # Tag with version
+        docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:latest ${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:v${{ github.run_number }}
+        docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:latest ${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:${{ github.sha }}
+
+    - name: Push Docker Image
+      run: |
+        # Push all tags
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:v${{ github.run_number }}
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/pulmonary_cancer:${{ github.sha }}
+        
+        echo "MLflow Docker images pushed to Docker Hub successfully"
