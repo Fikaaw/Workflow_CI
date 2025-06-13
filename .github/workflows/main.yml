@@ -46,6 +46,8 @@ jobs:
 
     - name: Get latest MLflow run_id
       run: |
+        # Set MLFLOW_TRACKING_URI to the local mlruns directory
+        export MLFLOW_TRACKING_URI=./MLProject/mlruns
         # Get the latest run ID from the default experiment (ID: 0)
         RUN_ID=$(python -c "import mlflow; client = mlflow.tracking.MlflowClient(); runs = client.search_runs(experiment_ids=['0'], order_by=['start_time DESC'], max_results=1); print(runs[0].info.run_id if runs else 'NO_RUN_FOUND')")
         echo "Found RUN_ID: $RUN_ID"
