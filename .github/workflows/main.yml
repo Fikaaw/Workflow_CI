@@ -134,14 +134,14 @@ jobs:
                 print("To enable: Add GOOGLE_DRIVE_CREDENTIALS secret and uncomment upload code")
                 
                 # Uncomment below for actual Google Drive upload:
-                # gauth = GoogleAuth()
-                # gauth.ServiceAuth()  # Use service account
-                # drive = GoogleDrive(gauth)
-                # 
-                # file_drive = drive.CreateFile({'title': zip_filename})
-                # file_drive.SetContentFile(zip_filename)
-                # file_drive.Upload()
-                # print(f"Uploaded {zip_filename} to Google Drive")
+                gauth = GoogleAuth()
+                gauth.ServiceAuth()  # Use service account
+                drive = GoogleDrive(gauth)
+                
+                file_drive = drive.CreateFile({'title': zip_filename})
+                file_drive.SetContentFile(zip_filename)
+                file_drive.Upload()
+                print(f"Uploaded {zip_filename} to Google Drive")
                 
             except Exception as e:
                 print(f"Google Drive upload error: {str(e)}")
