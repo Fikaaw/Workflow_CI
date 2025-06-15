@@ -39,10 +39,10 @@ jobs:
       run: |
         python load_local_model.py
 
-    - name: Run mlflow project (alternative approach)
+    - name: Run MLflow project (Base and Tuning)
       run: |
         cd MLProject
-        python modelling_with_local_model.py
+        mlflow run . --entry-point main --param mode=both
 
     - name: Get latest MLflow run_id
       run: |

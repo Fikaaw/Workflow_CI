@@ -1,4 +1,4 @@
-artifact_path: best_knn_model
+artifact_path: model
 flavors:
   python_function:
     env:
@@ -14,9 +14,14 @@ flavors:
     serialization_format: cloudpickle
     sklearn_version: 1.3.2
 mlflow_version: 2.19.0
-model_size_bytes: 33965
-model_uuid: 34967d35e5874859b9061d1263e2476c
-run_id: 703f81b38b384e478a8ba0dd5a19baf2
+model_size_bytes: 35498
+model_uuid: 36755a41d3a54468b962c350bb623d40
+run_id: d120758d1e9a4d7b9a52c023aa4c2ae8
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
 signature:
   inputs: '[{"type": "double", "name": "gender", "required": true}, {"type": "double",
     "name": "age", "required": true}, {"type": "double", "name": "smoking", "required":
@@ -29,6 +34,6 @@ signature:
     "double", "name": "coughing", "required": true}, {"type": "double", "name": "shortness_of_breath",
     "required": true}, {"type": "double", "name": "swallowing_difficulty", "required":
     true}, {"type": "double", "name": "chest_pain", "required": true}]'
-  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int32", "shape": [-1]}}]'
+  outputs: '[{"type": "integer", "required": true}]'
   params: null
-utc_time_created: '2025-06-13 07:32:39.298068'
+utc_time_created: '2025-06-15 13:01:24.844057'

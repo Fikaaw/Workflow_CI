@@ -1,9 +1,17 @@
-name: lung-cancer-project
+name: MLProject
 
 conda_env: conda.yaml
 
 entry_points:
   main:
+    parameters:
+      mode:
+        type: string
+        default: both
+        allowed_values: ["base", "tuning", "both"]
+    command: "python modelling.py --mode {mode}"
+  
+  local_model:
     parameters: {}
-    command: "python modelling.py"
+    command: "python modelling_with_local_model.py"
 
