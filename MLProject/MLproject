@@ -1,6 +1,6 @@
 name: MLProject
 
-python_env: python_env.yaml
+conda_env: conda.yaml
 
 entry_points:
   main:

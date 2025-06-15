@@ -42,7 +42,7 @@ jobs:
     - name: Run MLflow project (Base and Tuning)
       run: |
         cd MLProject
-        mlflow run . --entry-point main -P mode=both
+        python modelling.py --mode both
 
     - name: Get latest MLflow run_id
       run: |
