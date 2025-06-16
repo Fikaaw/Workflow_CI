@@ -42,7 +42,7 @@ jobs:
     - name: Run MLflow project (Base and Tuning)
       run: |
         cd MLProject
-        python modelling.py --mode both
+        mlflow run MLProject --env-manager=local
 
     - name: Get latest MLflow run_id
       run: |
