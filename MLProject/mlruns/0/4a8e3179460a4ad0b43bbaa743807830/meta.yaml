@@ -1,5 +1,5 @@
 artifact_uri: mlflow-artifacts:/0/4a8e3179460a4ad0b43bbaa743807830/artifacts
-end_time: null
+end_time: 1750125331913
 entry_point_name: ''
 experiment_id: '0'
 lifecycle_stage: active
@@ -10,6 +10,6 @@ source_name: ''
 source_type: 4
 source_version: ''
 start_time: 1750125303039
-status: 1
+status: 4
 tags: []
 user_id: K E I
