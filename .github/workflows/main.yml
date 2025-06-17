@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Run actions/checkout@v3 
+    - name: Checkout code 
       uses: actions/checkout@v3
 
-    - name: Set up Python 3.12.7
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.12.7
@@ -42,27 +42,19 @@ jobs:
         sleep 10
 
     - name: Run modelling
+      shell: bash
       run: |
         cd MLProject
-        export MLFLOW_TRACKING_URI=http://localhost:5000
-        mlflow run . --env-manager=local
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          export MLFLOW_TRACKING_URI=http://localhost:5000; mlflow run . --env-manager=local
+        else
+          export MLFLOW_TRACKING_URI=http://localhost:5000
+          mlflow run . --env-manager=local
+        fi
 
     - name: Get latest MLflow run_id
       run: |
-        # Set MLFLOW_TRACKING_URI to the local mlruns directory
-        export MLFLOW_TRACKING_URI=./MLProject/mlruns
-        # Get the latest run ID from the default experiment (ID: 0)
-        RUN_ID=$(python -c "import mlflow; client = mlflow.tracking.MlflowClient(); runs = client.search_runs(experiment_ids=['0'], order_by=['start_time DESC'], max_results=1); print(runs[0].info.run_id if runs else 'NO_RUN_FOUND')")
-        echo "Found RUN_ID: $RUN_ID"
-        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-        
-        # Verify run exists
-        if [ "$RUN_ID" = "NO_RUN_FOUND" ]; then
-          echo "Error: No MLflow run found"
-          exit 1
-        fi
-        
-        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+        echo "RUN_ID=$(mlflow experiments list --view-type ACTIVE | tail -n 1 | awk '{print $1}')" >> $GITHUB_ENV
 
     - name: Install Python dependencies
       run: |
