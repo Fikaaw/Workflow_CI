@@ -45,9 +45,7 @@ def run_base_model(X_train, X_test, y_train, y_test):
     if active_run:
         print(f"Using active MLflow run: {active_run.info.run_id}")
     else:
-        print("No active run found, creating new run")
-        mlflow.set_experiment("Pulmonary Cancer Prediction")
-        mlflow.start_run(run_name="KNN_Base_Modelling")
+        raise RuntimeError("No active MLflow run found. This script should be run via 'mlflow run' command.")
     
     input_example = X_train[0:5]
     
@@ -95,11 +93,7 @@ def run_tuning_model(X_train, X_test, y_train, y_test):
     if active_run:
         print(f"Using active MLflow run: {active_run.info.run_id}")
     else:
-        print("No active run found, creating new run")
-        mlflow.set_experiment("Pulmonary Cancer Prediction Tuning")
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        run_name = f"KNN_Tuning_Modelling_{timestamp}"
-        mlflow.start_run(run_name=run_name)
+        raise RuntimeError("No active MLflow run found. This script should be run via 'mlflow run' command.")
     
     # Log model type
     mlflow.log_param("model_type", "tuned")

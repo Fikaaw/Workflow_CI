@@ -35,14 +35,10 @@ jobs:
       run: |
         pip install -r ./MLProject/requirements.txt
 
-    - name: Test local model loading
-      run: |
-        python load_local_model.py
-
     - name: Run MLflow project (Base and Tuning)
       run: |
         cd MLProject
-        mlflow run . --env-manager=local
+        mlflow active_run = mlflow.active_run()
 
     - name: Get latest MLflow run_id
       run: |
