@@ -40,12 +40,15 @@ def load_and_prepare_data():
 
 def run_base_model(X_train, X_test, y_train, y_test):
     """Run base KNN model without hyperparameter tuning"""
-    # Use the active run from mlflow run command
+    # Check for active run, if not found, start a new one
     active_run = mlflow.active_run()
     if active_run:
         print(f"Using active MLflow run: {active_run.info.run_id}")
     else:
-        raise RuntimeError("No active MLflow run found. This script should be run via 'mlflow run' command.")
+        print("No active run found, starting new run...")
+        mlflow.start_run(run_name="KNN_Base_Modelling")
+        active_run = mlflow.active_run()
+        print(f"Started new MLflow run: {active_run.info.run_id}")
     
     input_example = X_train[0:5]
     
@@ -88,12 +91,15 @@ def run_base_model(X_train, X_test, y_train, y_test):
 
 def run_tuning_model(X_train, X_test, y_train, y_test):
     """Run hyperparameter tuning for KNN model"""
-    # Use the active run from mlflow run command
+    # Check for active run, if not found, start a new one
     active_run = mlflow.active_run()
     if active_run:
         print(f"Using active MLflow run: {active_run.info.run_id}")
     else:
-        raise RuntimeError("No active MLflow run found. This script should be run via 'mlflow run' command.")
+        print("No active run found, starting new run...")
+        mlflow.start_run(run_name="KNN_Tuning_Modelling")
+        active_run = mlflow.active_run()
+        print(f"Started new MLflow run: {active_run.info.run_id}")
     
     # Log model type
     mlflow.log_param("model_type", "tuned")
