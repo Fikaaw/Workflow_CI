@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/523cc4c6a98042439c5f20f5130c87e0/artifacts
+end_time: 1750128092922
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 523cc4c6a98042439c5f20f5130c87e0
+run_name: KNN_Base_Modelling
+run_uuid: 523cc4c6a98042439c5f20f5130c87e0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1750128079484
+status: 3
+tags: []
+user_id: K E I

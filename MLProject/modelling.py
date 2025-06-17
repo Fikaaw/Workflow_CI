@@ -89,19 +89,18 @@ def run_base_model(X_train, X_test, y_train, y_test):
     print(f"Base model train accuracy: {train_accuracy:.4f}")
     print("Base model MLflow run completed successfully")
     
+    # End the MLflow run
+    mlflow.end_run()
+    
     return model, accuracy
 
 def run_tuning_model(X_train, X_test, y_train, y_test):
     """Run hyperparameter tuning for KNN model"""
-    # Check for active run, if not found, start a new one
+    # Always start a new run for tuning to avoid parameter conflicts
+    print("Starting new MLflow run for hyperparameter tuning...")
+    mlflow.start_run(run_name="KNN_Tuning_Modelling")
     active_run = mlflow.active_run()
-    if active_run:
-        print(f"Using active MLflow run: {active_run.info.run_id}")
-    else:
-        print("No active run found, starting new run...")
-        mlflow.start_run(run_name="KNN_Tuning_Modelling")
-        active_run = mlflow.active_run()
-        print(f"Started new MLflow run: {active_run.info.run_id}")
+    print(f"Started new MLflow run: {active_run.info.run_id}")
     
     # Log model type
     mlflow.log_param("model_type", "tuned")
@@ -150,7 +149,7 @@ def run_tuning_model(X_train, X_test, y_train, y_test):
     input_example = X_train[0:5]
     mlflow.sklearn.log_model(
         sk_model=best_model,
-        name="model",
+        artifact_path="model",
         input_example=input_example
     )
     
@@ -167,6 +166,9 @@ def run_tuning_model(X_train, X_test, y_train, y_test):
     print(f"Test accuracy: {test_accuracy:.4f}")
     print(f"Train accuracy: {train_accuracy:.4f}")
     print("Tuning model MLflow run completed successfully")
+    
+    # End the MLflow run
+    mlflow.end_run()
     
     return best_model, test_accuracy
 

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/17111a7db1fd470ebcdeb9f6c19ebc26/artifacts
+end_time: 1750128736053
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 17111a7db1fd470ebcdeb9f6c19ebc26
+run_name: KNN_Tuning_Modelling
+run_uuid: 17111a7db1fd470ebcdeb9f6c19ebc26
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1750128718317
+status: 3
+tags: []
+user_id: K E I
