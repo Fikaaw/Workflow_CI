@@ -10,13 +10,15 @@ from datetime import datetime
 import os
 import argparse
 
-def setup_mlflow():
-    """Setup MLflow tracking URI and experiment"""
-    # Set MLflow tracking URI to local directory
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    mlruns_path = os.path.join(current_dir, "mlruns")
-    mlflow.set_tracking_uri(f"file:{mlruns_path}")
-    print(f"MLflow Tracking URI: {mlflow.get_tracking_uri()}")
+mlflow.set_tracking_uri("http://localhost:5000")
+
+# def setup_mlflow():
+#     """Setup MLflow tracking URI and experiment"""
+#     # Set MLflow tracking URI to local directory
+#     current_dir = os.path.dirname(os.path.abspath(__file__))
+#     mlruns_path = os.path.join(current_dir, "mlruns")
+#     mlflow.set_tracking_uri(f"file:{mlruns_path}")
+#     print(f"MLflow Tracking URI: {mlflow.get_tracking_uri()}")
 
 def load_and_prepare_data():
     """Load and prepare the dataset"""
@@ -177,7 +179,7 @@ def main():
     args = parser.parse_args()
     
     # Setup MLflow
-    setup_mlflow()
+    # setup_mlflow()
     
     # Load and prepare data
     print("Loading and preparing data...")
