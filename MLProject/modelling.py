@@ -69,6 +69,7 @@ def run_base_model(X_train, X_test, y_train, y_test):
     mlflow.sklearn.log_model(
         sk_model=model,
         artifact_path="model",
+        registered_model_name="knn_base_model",
         input_example=input_example
     )
     
@@ -149,6 +150,7 @@ def run_tuning_model(X_train, X_test, y_train, y_test):
     mlflow.sklearn.log_model(
         sk_model=best_model,
         artifact_path="model",
+        registered_model_name="Model KNN Tuning",
         input_example=input_example
     )
     
