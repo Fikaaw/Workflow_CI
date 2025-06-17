@@ -45,7 +45,7 @@ jobs:
       run: |
         cd MLProject
         export MLFLOW_TRACKING_URI=http://localhost:5000
-        mlflow run . --env-manager=local --no-conda  
+        mlflow run . --env-manager=local   
 
     - name: Get latest MLflow run_id
       run: |
