@@ -35,10 +35,17 @@ jobs:
       run: |
         pip install -r ./MLProject/requirements.txt
 
-    - name: Run MLflow Project
+    - name: Start MLflow server
       run: |
         cd MLProject
-        mlflow run . --env-manager=local  
+        nohup mlflow server --host 0.0.0.0 --port 5000 > server.log 2>&1 &
+        sleep 10
+
+    - name: Run modelling
+      run: |
+        cd MLProject
+        export MLFLOW_TRACKING_URI=http://localhost:5000
+        mlflow run . --env-manager=local --no-conda  
 
     - name: Get latest MLflow run_id
       run: |

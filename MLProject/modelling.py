@@ -68,7 +68,7 @@ def run_base_model(X_train, X_test, y_train, y_test):
     # Log model
     mlflow.sklearn.log_model(
         sk_model=model,
-        name="model",
+        artifact_path="model",
         input_example=input_example
     )
     
