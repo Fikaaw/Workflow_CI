@@ -1,0 +1,7 @@
+artifact_location: file:///home/runner/work/Workflow_CI/Workflow_CI/MLProject/mlruns/d120758d1e9a4d7b9a52c023aa4c2ae8
+creation_time: 1734393600000
+experiment_id: 'd120758d1e9a4d7b9a52c023aa4c2ae8'
+last_update_time: 1734393600000
+lifecycle_stage: active
+name: Pulmonary Cancer Prediction
+tags: {}
