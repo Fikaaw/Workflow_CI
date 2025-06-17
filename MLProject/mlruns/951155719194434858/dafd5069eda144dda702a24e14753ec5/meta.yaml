@@ -1,0 +1,15 @@
+artifact_uri: file:C:\Users\immab\Documents\GitHub\Workflow_CI\MLProject\mlruns/951155719194434858/dafd5069eda144dda702a24e14753ec5/artifacts
+end_time: 1750119010208
+entry_point_name: ''
+experiment_id: '951155719194434858'
+lifecycle_stage: active
+run_id: dafd5069eda144dda702a24e14753ec5
+run_name: KNN_Base_Modelling
+run_uuid: dafd5069eda144dda702a24e14753ec5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1750118983409
+status: 3
+tags: []
+user_id: K E I

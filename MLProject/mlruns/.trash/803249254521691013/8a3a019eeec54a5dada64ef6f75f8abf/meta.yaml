@@ -1,0 +1,16 @@
+artifact_uri: file:///c:/Users/immab/Documents/GitHub/SMSML_Ida_Sri_Afiqah/Membangun_Model/mlruns/803249254521691013/8a3a019eeec54a5dada64ef6f75f8abf/artifacts
+deleted_time: 1749799855979
+end_time: 1749795290902
+entry_point_name: ''
+experiment_id: '803249254521691013'
+lifecycle_stage: deleted
+run_id: 8a3a019eeec54a5dada64ef6f75f8abf
+run_name: RandomForest_Modelling_2025-06-13_13-14-36
+run_uuid: 8a3a019eeec54a5dada64ef6f75f8abf
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1749795277604
+status: 3
+tags: []
+user_id: danyeka
