@@ -40,127 +40,133 @@ def load_and_prepare_data():
 
 def run_base_model(X_train, X_test, y_train, y_test):
     """Run base KNN model without hyperparameter tuning"""
-    mlflow.set_experiment("Pulmonary Cancer Prediction")
+    # Use the active run from mlflow run command
+    active_run = mlflow.active_run()
+    if active_run:
+        print(f"Using active MLflow run: {active_run.info.run_id}")
+    else:
+        print("No active run found, creating new run")
+        mlflow.set_experiment("Pulmonary Cancer Prediction")
+        mlflow.start_run(run_name="KNN_Base_Modelling")
     
-    run_name = "KNN_Base_Modelling"
     input_example = X_train[0:5]
     
-    with mlflow.start_run(run_name=run_name) as run:
-        print(f"Started MLflow run: {run.info.run_id}")
-        
-        # Set parameters
-        n_neighbors = 5
-        mlflow.log_param("n_neighbors", n_neighbors)
-        mlflow.log_param("algorithm", "auto")
-        mlflow.log_param("weights", "uniform")
-        mlflow.log_param("test_size", 0.2)
-        mlflow.log_param("random_state", 42)
-        mlflow.log_param("model_type", "base")
-        
-        # Train model
-        model = KNeighborsClassifier(n_neighbors=n_neighbors, algorithm='auto')
-        model.fit(X_train, y_train)
-        
-        # Log model
-        mlflow.sklearn.log_model(
-            sk_model=model,
-            artifact_path="model",
-            input_example=input_example
-        )
-        
-        # Calculate and log metrics
-        accuracy = model.score(X_test, y_test)
-        train_accuracy = model.score(X_train, y_train)
-        
-        # Log metrics
-        mlflow.log_metric("test_accuracy", accuracy)
-        mlflow.log_metric("train_accuracy", train_accuracy)
-        mlflow.log_metric("data_size", len(X_train) + len(X_test))
-        mlflow.log_metric("train_size", len(X_train))
-        mlflow.log_metric("test_size", len(X_test))
-        
-        print(f"Base model trained with test accuracy: {accuracy:.4f}")
-        print(f"Base model train accuracy: {train_accuracy:.4f}")
-        print("Base model MLflow run completed successfully")
-        
-        return model, accuracy
+    # Set parameters
+    n_neighbors = 5
+    mlflow.log_param("n_neighbors", n_neighbors)
+    mlflow.log_param("algorithm", "auto")
+    mlflow.log_param("weights", "uniform")
+    mlflow.log_param("test_size", 0.2)
+    mlflow.log_param("random_state", 42)
+    mlflow.log_param("model_type", "base")
+    
+    # Train model
+    model = KNeighborsClassifier(n_neighbors=n_neighbors, algorithm='auto')
+    model.fit(X_train, y_train)
+    
+    # Log model
+    mlflow.sklearn.log_model(
+        sk_model=model,
+        artifact_path="model",
+        input_example=input_example
+    )
+    
+    # Calculate and log metrics
+    accuracy = model.score(X_test, y_test)
+    train_accuracy = model.score(X_train, y_train)
+    
+    # Log metrics
+    mlflow.log_metric("test_accuracy", accuracy)
+    mlflow.log_metric("train_accuracy", train_accuracy)
+    mlflow.log_metric("data_size", len(X_train) + len(X_test))
+    mlflow.log_metric("train_size", len(X_train))
+    mlflow.log_metric("test_size", len(X_test))
+    
+    print(f"Base model trained with test accuracy: {accuracy:.4f}")
+    print(f"Base model train accuracy: {train_accuracy:.4f}")
+    print("Base model MLflow run completed successfully")
+    
+    return model, accuracy
 
 def run_tuning_model(X_train, X_test, y_train, y_test):
     """Run hyperparameter tuning for KNN model"""
-    mlflow.set_experiment("Pulmonary Cancer Prediction Tuning")
+    # Use the active run from mlflow run command
+    active_run = mlflow.active_run()
+    if active_run:
+        print(f"Using active MLflow run: {active_run.info.run_id}")
+    else:
+        print("No active run found, creating new run")
+        mlflow.set_experiment("Pulmonary Cancer Prediction Tuning")
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        run_name = f"KNN_Tuning_Modelling_{timestamp}"
+        mlflow.start_run(run_name=run_name)
     
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    run_name = f"KNN_Tuning_Modelling_{timestamp}"
+    # Log model type
+    mlflow.log_param("model_type", "tuned")
+    mlflow.log_param("test_size", 0.2)
+    mlflow.log_param("random_state", 42)
     
-    with mlflow.start_run(run_name=run_name) as run:
-        print(f"Started MLflow run: {run.info.run_id}")
-        
-        # Log model type
-        mlflow.log_param("model_type", "tuned")
-        mlflow.log_param("test_size", 0.2)
-        mlflow.log_param("random_state", 42)
-        
-        # Create pipeline with scaling
-        pipeline = Pipeline([
-            ('scaler', StandardScaler()),
-            ('knn', KNeighborsClassifier())
-        ])
-        
-        # Define parameter grid
-        param_grid = {
-            'knn__n_neighbors': [3, 5, 7, 9, 11, 13, 15],
-            'knn__weights': ['uniform', 'distance'],
-            'knn__metric': ['euclidean', 'manhattan', 'minkowski']
-        }
-        
-        # Log hyperparameter search space
-        mlflow.log_param("param_grid", str(param_grid))
-        mlflow.log_param("cv_folds", 5)
-        
-        # Perform grid search
-        grid_search = GridSearchCV(
-            pipeline, 
-            param_grid=param_grid,
-            cv=5, 
-            scoring='accuracy', 
-            n_jobs=-1
-        )
-        
-        grid_search.fit(X_train, y_train)
-        
-        # Get best model and predictions
-        best_model = grid_search.best_estimator_
-        y_pred = best_model.predict(X_test)
-        test_accuracy = accuracy_score(y_test, y_pred)
-        train_accuracy = best_model.score(X_train, y_train)
-        
-        # Log best parameters
-        for param, value in grid_search.best_params_.items():
-            mlflow.log_param(f"best_{param}", value)
-        
-        # Log model
-        input_example = X_train[0:5]
-        mlflow.sklearn.log_model(
-            sk_model=best_model,
-            artifact_path="model",
-            input_example=input_example
-        )
-        
-        # Log metrics
-        mlflow.log_metric("best_cv_score", grid_search.best_score_)
-        mlflow.log_metric("test_accuracy", test_accuracy)
-        mlflow.log_metric("train_accuracy", train_accuracy)
-        mlflow.log_metric("data_size", len(X_train) + len(X_test))
-        mlflow.log_metric("train_size", len(X_train))
-        mlflow.log_metric("test_size", len(X_test))
-        
-        print(f"Best parameters: {grid_search.best_params_}")
-        print(f"Best cross-validation score: {grid_search.best_score_:.4f}")
-        print(f"Test accuracy: {test_accuracy:.4f}")
-        print(f"Train accuracy: {train_accuracy:.4f}")
-        print("Tuning model MLflow run completed successfully")
-        
-        return best_model, test_accuracy
+    # Create pipeline with scaling
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('knn', KNeighborsClassifier())
+    ])
+    
+    # Define parameter grid
+    param_grid = {
+        'knn__n_neighbors': [3, 5, 7, 9, 11, 13, 15],
+        'knn__weights': ['uniform', 'distance'],
+        'knn__metric': ['euclidean', 'manhattan', 'minkowski']
+    }
+    
+    # Log hyperparameter search space
+    mlflow.log_param("param_grid", str(param_grid))
+    mlflow.log_param("cv_folds", 5)
+    
+    # Perform grid search
+    grid_search = GridSearchCV(
+        pipeline, 
+        param_grid=param_grid,
+        cv=5, 
+        scoring='accuracy', 
+        n_jobs=-1
+    )
+    
+    grid_search.fit(X_train, y_train)
+    
+    # Get best model and predictions
+    best_model = grid_search.best_estimator_
+    y_pred = best_model.predict(X_test)
+    test_accuracy = accuracy_score(y_test, y_pred)
+    train_accuracy = best_model.score(X_train, y_train)
+    
+    # Log best parameters
+    for param, value in grid_search.best_params_.items():
+        mlflow.log_param(f"best_{param}", value)
+    
+    # Log model
+    input_example = X_train[0:5]
+    mlflow.sklearn.log_model(
+        sk_model=best_model,
+        artifact_path="model",
+        input_example=input_example
+    )
+    
+    # Log metrics
+    mlflow.log_metric("best_cv_score", grid_search.best_score_)
+    mlflow.log_metric("test_accuracy", test_accuracy)
+    mlflow.log_metric("train_accuracy", train_accuracy)
+    mlflow.log_metric("data_size", len(X_train) + len(X_test))
+    mlflow.log_metric("train_size", len(X_train))
+    mlflow.log_metric("test_size", len(X_test))
+    
+    print(f"Best parameters: {grid_search.best_params_}")
+    print(f"Best cross-validation score: {grid_search.best_score_:.4f}")
+    print(f"Test accuracy: {test_accuracy:.4f}")
+    print(f"Train accuracy: {train_accuracy:.4f}")
+    print("Tuning model MLflow run completed successfully")
+    
+    return best_model, test_accuracy
 
 def main():
     """Main function to run both base and tuning models"""
