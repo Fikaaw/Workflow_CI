@@ -43,14 +43,11 @@ jobs:
 
     - name: Run modelling
       shell: bash
+      env:
+        MLFLOW_TRACKING_URI: http://localhost:5000
       run: |
         cd MLProject
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          export MLFLOW_TRACKING_URI=http://localhost:5000; mlflow run . --env-manager=local
-        else
-          export MLFLOW_TRACKING_URI=http://localhost:5000
-          mlflow run . --env-manager=local
-        fi
+        mlflow run . --env-manager=local
 
     - name: Get latest MLflow run_id
       run: |
